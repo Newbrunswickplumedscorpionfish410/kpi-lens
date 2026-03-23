@@ -1,0 +1,60 @@
+# KPI-Lens — Anomaly Detection Configuration
+# Tune detector behaviour here without code changes.
+
+detection:
+
+  # Minimum severity (0.0–1.0) for an anomaly to be persisted to the database.
+  # Below this, the signal is logged at DEBUG and discarded.
+  severity_floor: 0.30
+
+  # Minimum days of history required before the ensemble can run.
+  # Below this, only the ThresholdDetector runs (hard rule-based checks).
+  min_history_days: 14
+
+  # Days of history required before the ML detector (Isolation Forest) is activated.
+  ml_activation_days: 60
+
+  # Ensemble weights — must sum to 1.0 within each group.
+  # Statistical and ML groups are normalized independently, then combined.
+  weights:
+    threshold: 1.00     # Always runs; CRITICAL anomalies bypass the ensemble
+    zscore: 0.35
+    iqr: 0.30
+    cusum: 0.35
+    isolation_forest: 0.80  # Activated only after ml_activation_days
+    lstm: 0.90              # Activated only when lstm_enabled: true
+
+  # Statistical detectors
+  statistical:
+    zscore:
+      window_days: 30         # Rolling window for mean/stdev estimation
+      threshold_sigma: 2.5    # Flag if |z| > this value
+    iqr:
+      window_days: 90         # Longer window to capture seasonal distributions
+      fence_multiplier: 1.5   # Standard Tukey fence (1.5 = mild, 3.0 = extreme)
+    cusum:
+      target_shift_sigma: 1.0 # Detect drifts of ≥1σ from the target mean
+      decision_interval: 4.0  # Cumulative sum threshold before flagging
+
+  # ML detectors
+  ml:
+    isolation_forest:
+      contamination: 0.05     # Expected fraction of anomalies in training data
+      n_estimators: 200
+      retrain_every_days: 30  # Monthly retraining schedule
+      feature_lags: [1, 7, 14, 30]  # Lag features added to raw value before training
+
+    lstm:
+      enabled: false          # Disabled by default; requires `pip install kpi-lens[lstm]`
+      sequence_length: 30     # Input window length (days)
+      hidden_size: 64
+      num_layers: 2
+      reconstruction_threshold_sigma: 3.0
+      retrain_every_days: 90
+
+  # Severity score mapping from normalized detector score
+  # Maps [0, 1] detector output to [0, 1] severity with a configurable curve.
+  severity:
+    # 'linear': severity = raw_score
+    # 'sigmoid': compress mid-range, amplify extremes
+    curve: linear

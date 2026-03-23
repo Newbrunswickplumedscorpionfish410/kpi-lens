@@ -1,0 +1,12 @@
+FROM python:3.11-slim AS base
+WORKDIR /app
+COPY pyproject.toml .
+RUN pip install --no-cache-dir mcp sqlalchemy pydantic pydantic-settings PyYAML
+
+FROM base AS production
+COPY kpi_lens/mcp_server/ ./kpi_lens/mcp_server/
+COPY kpi_lens/db/ ./kpi_lens/db/
+COPY kpi_lens/kpis/ ./kpi_lens/kpis/
+COPY kpi_lens/config.py ./kpi_lens/
+COPY config/ ./config/
+CMD ["python", "-m", "kpi_lens.mcp_server.server"]

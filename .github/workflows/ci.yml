@@ -1,0 +1,75 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dev dependencies
+        run: pip install ruff mypy types-PyYAML pandas-stubs
+
+      - name: Ruff lint
+        run: ruff check kpi_lens/
+
+      - name: Ruff format check
+        run: ruff format --check kpi_lens/
+
+      - name: Mypy type check
+        run: mypy kpi_lens/ --ignore-missing-imports
+
+  test:
+    name: Unit Tests (Python ${{ matrix.python-version }})
+    needs: lint
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install package + dev deps
+        run: pip install -e ".[dev]"
+
+      - name: Run unit tests
+        # No ANTHROPIC_API_KEY — mock_anthropic fixture handles all LLM calls
+        run: pytest tests/unit/ -v --cov=kpi_lens --cov-report=xml --cov-fail-under=80
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        if: matrix.python-version == '3.11'
+        with:
+          file: ./coverage.xml
+          fail_ci_if_error: false
+
+  docker-build:
+    name: Docker Build Check
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build API image
+        run: docker build -f Dockerfile.api --target production -t kpi-lens-api:test .
+
+      - name: Build Dashboard image
+        run: docker build -f Dockerfile.dashboard --target production -t kpi-lens-dashboard:test .
+
+      - name: Build MCP Server image
+        run: docker build -f Dockerfile.mcp --target production -t kpi-lens-mcp:test .

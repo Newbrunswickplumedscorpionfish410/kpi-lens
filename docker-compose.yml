@@ -1,0 +1,64 @@
+services:
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+      target: production
+    container_name: kpi-lens-api
+    ports:
+      - "8000:8000"
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - KPI_LENS_ENV=production
+      - DATABASE_URL=sqlite:////data/kpi_lens.db
+    volumes:
+      - kpi_data:/data
+      - ./config:/app/config:ro
+    healthcheck:
+      test: ["CMD", "python", "-c",
+             "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile.dashboard
+      target: production
+    container_name: kpi-lens-dashboard
+    ports:
+      - "8501:8501"
+    environment:
+      - API_BASE_URL=http://api:8000
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+  mcp:
+    build:
+      context: .
+      dockerfile: Dockerfile.mcp
+      target: production
+    container_name: kpi-lens-mcp
+    environment:
+      - DATABASE_URL=sqlite:////data/kpi_lens.db
+      - MCP_TRANSPORT=http
+      - MCP_PORT=8080
+    ports:
+      - "8080:8080"
+    volumes:
+      - kpi_data:/data:ro
+    depends_on:
+      api:
+        condition: service_healthy
+    profiles:
+      - tools
+    restart: unless-stopped
+
+volumes:
+  kpi_data:
+    driver: local

@@ -1,0 +1,126 @@
+# KPI-Lens — KPI Definitions
+# Source of truth for thresholds and benchmarks.
+# Change this file without redeploying; the app reloads on startup.
+# Values are loaded into KPIDefinition constants in kpi_lens/kpis/definitions.py.
+
+kpis:
+
+  otif:
+    display_name: "OTIF Delivery Rate"
+    unit: "%"
+    direction: higher_is_better
+    thresholds:
+      green: 95.0
+      yellow: 90.0
+      red: 85.0
+    industry_benchmark: 95.5   # Gartner Supply Chain Top 25, 2024
+    seasonality_period: null   # No strong seasonality for OTIF
+    description: >
+      Percentage of orders delivered on-time AND in-full.
+      Formula: (Orders OTIF / Total Orders) × 100.
+      A value below green indicates delivery reliability issues.
+
+  inventory_turn:
+    display_name: "Inventory Turnover"
+    unit: "turns/yr"
+    direction: higher_is_better
+    thresholds:
+      green: 12.0
+      yellow: 8.0
+      red: 5.0
+    industry_benchmark: 10.0   # APICS Supply Chain Benchmark 2023
+    seasonality_period: 365
+    description: >
+      How many times inventory is sold and replaced per year.
+      Formula: COGS / Average Inventory Value.
+      Low turnover signals excess stock or slow-moving SKUs.
+
+  dio:
+    display_name: "Days Inventory Outstanding"
+    unit: "days"
+    direction: lower_is_better
+    thresholds:
+      green: 30.0
+      yellow: 45.0
+      red: 60.0
+    industry_benchmark: 35.0
+    seasonality_period: 365
+    description: >
+      Average days to sell all inventory on hand.
+      Formula: (Average Inventory / COGS) × 365.
+      Directly inverse to Inventory Turnover; high DIO = capital locked in stock.
+
+  supplier_dppm:
+    display_name: "Supplier DPPM"
+    unit: "ppm"
+    direction: lower_is_better
+    thresholds:
+      green: 500.0
+      yellow: 1500.0
+      red: 3000.0
+    industry_benchmark: 800.0  # Automotive Industry Action Group (AIAG) target
+    seasonality_period: null
+    description: >
+      Defective Parts Per Million received from suppliers.
+      Formula: (Defective Parts / Total Parts Received) × 1,000,000.
+      A spike often precedes OTIF degradation by 2–4 weeks.
+
+  dfa:
+    display_name: "Demand Forecast Accuracy"
+    unit: "%"
+    direction: higher_is_better
+    thresholds:
+      green: 85.0
+      yellow: 75.0
+      red: 65.0
+    industry_benchmark: 80.0
+    seasonality_period: 365
+    description: >
+      Accuracy of demand forecasts versus actual demand.
+      Formula: (1 - |Forecast - Actual| / Actual) × 100, averaged across SKUs.
+      Low DFA cascades into either excess inventory (over-forecast) or stockouts.
+
+  fill_rate:
+    display_name: "Order Fill Rate"
+    unit: "%"
+    direction: higher_is_better
+    thresholds:
+      green: 97.0
+      yellow: 93.0
+      red: 88.0
+    industry_benchmark: 96.0
+    seasonality_period: null
+    description: >
+      Percentage of order lines shipped complete from available stock.
+      Formula: (Order Lines Shipped Complete / Total Order Lines) × 100.
+      Distinct from OTIF: fill rate measures completeness, not timeliness.
+
+  ltv:
+    display_name: "Lead Time Variance"
+    unit: "days"
+    direction: lower_is_better
+    thresholds:
+      green: 3.0
+      yellow: 7.0
+      red: 14.0
+    industry_benchmark: 5.0
+    seasonality_period: null
+    description: >
+      Standard deviation of supplier lead times over a rolling 90-day window.
+      High variance makes safety stock calculation unreliable, forcing either
+      excess buffer stock or frequent stockouts.
+
+  po_cycle_time:
+    display_name: "PO Cycle Time"
+    unit: "days"
+    direction: lower_is_better
+    thresholds:
+      green: 14.0
+      yellow: 21.0
+      red: 30.0
+    industry_benchmark: 18.0
+    seasonality_period: null
+    description: >
+      Average calendar days from Purchase Order creation to Goods Receipt.
+      Formula: mean(GR Date - PO Creation Date) per period.
+      Increasing PO cycle time is an early warning of supplier capacity issues.

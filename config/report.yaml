@@ -1,0 +1,63 @@
+# KPI-Lens — Report Configuration
+
+schedule:
+  weekly_report:
+    enabled: true
+    cron: "0 6 * * 1"          # Every Monday at 06:00 UTC
+    period_days: 7
+    report_type: weekly
+
+  monthly_report:
+    enabled: true
+    cron: "0 7 1 * *"          # 1st of each month at 07:00 UTC
+    period_days: 30
+    report_type: monthly
+
+branding:
+  company_name: "KPI-Lens Analytics"
+  accent_color: "#002776"       # Matches dashboard primary color
+  font_name: "Calibri"          # Embedded in PPTX template
+  logo_path: null               # Set to absolute path if you have a logo PNG
+
+slides:
+  cover:
+    subtitle: "Supply Chain KPI Intelligence Report"
+    show_generated_timestamp: true
+    show_anomaly_count_badge: true
+
+  kpi_summary:
+    layout: "2x4_grid"          # 2 rows × 4 KPIs per row
+    show_benchmark_line: true
+    show_mom_delta: true
+
+  per_kpi:
+    enabled: true
+    chart_type: "line_with_anomaly_markers"
+    show_threshold_bands: true
+    lookback_days: 90
+
+  anomaly_table:
+    max_rows: 10
+    columns: ["kpi_name", "detected_at", "observed_value", "expected_range", "severity"]
+
+  llm_deep_dive:
+    enabled: true
+    max_anomalies: 5            # Only top-N by severity get a dedicated slide
+    include_recommendations: true
+    max_recommendations: 3
+
+export:
+  output_dir: "data/exports/reports"
+  filename_template: "kpi_report_{period_start}_{period_end}_{report_type}.pptx"
+  convert_to_pdf: true          # Requires LibreOffice installed
+
+email:
+  enabled: false                # Set to true and configure SMTP_* env vars
+  subject_template: "KPI-Lens {report_type} Report — {period_end}"
+  attach_pptx: true
+  attach_pdf: true
+
+power_bi:
+  export_on_report: true        # Auto-export Excel workbook alongside PPTX
+  excel_output_dir: "data/exports/power_bi"
+  odata_enabled: false          # FastAPI OData endpoint (stretch feature)
